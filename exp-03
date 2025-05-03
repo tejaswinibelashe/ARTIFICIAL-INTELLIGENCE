@@ -1,0 +1,79 @@
+from collections import deque
+
+def is_goal(state, goal, target_jug):
+    return state[target_jug] == goal and all(
+        state[i] == 0 for i in range(len(state)) if i != target_jug
+    )
+
+def get_next_states(state, capacities):
+    next_states = []
+    n = len(capacities)
+
+    for i in range(n):
+        new_state = list(state)
+        new_state[i] = capacities[i]
+        next_states.append(tuple(new_state))
+
+    for i in range(n):
+        new_state = list(state)
+        new_state[i] = 0
+        next_states.append(tuple(new_state))
+
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                new_state = list(state)
+                transfer = min(state[i], capacities[j] - state[j])
+                new_state[i] -= transfer
+                new_state[j] += transfer
+                next_states.append(tuple(new_state))
+
+    return next_states
+
+def water_jug_solver(capacities, goal, target_jug):
+    start = tuple([0] * len(capacities))
+    visited = set()
+    queue = deque([(start, [], 0)])
+
+    while queue:
+        state, path, cost = queue.popleft()
+
+        if is_goal(state, goal, target_jug):
+            path.append(state)
+            return path, cost
+
+        for next_state in get_next_states(state, capacities):
+            if next_state not in visited:
+                visited.add(next_state)
+                queue.append((next_state, path + [state], cost + 1))
+
+    return None, -1
+
+if __name__ == "__main__":
+    try:
+        num_jugs = int(input("Enter number of jugs: "))
+        capacities = []
+        for i in range(num_jugs):
+            cap = int(input(f"Enter capacity of Jug {i + 1}: "))
+            capacities.append(cap)
+
+        goal = int(input("Enter target amount (in liters): "))
+        target_jug = int(input(f"Enter which jug should contain the {goal}L (1 to {num_jugs}): ")) - 1
+
+        if target_jug < 0 or target_jug >= num_jugs:
+            print(" Invalid jug number.")
+        elif goal > capacities[target_jug]:
+            print(" Goal exceeds the capacity of the target jug.")
+        else:
+            solution, cost = water_jug_solver(capacities, goal, target_jug)
+
+            if solution:
+                print("\n Steps to reach the goal (with other jugs empty):")
+                for i, state in enumerate(solution):
+                    state_str = " | ".join(f"Jug{i+1}: {v}L" for i, v in enumerate(state))
+                    print(f"Move {i}: {state_str}")
+                print(f"\n Target of {goal}L in Jug {target_jug + 1} (others empty) reached in {cost} moves.")
+            else:
+                print(" No solution found.")
+    except ValueError:
+        print(" Please enter valid integers.")
