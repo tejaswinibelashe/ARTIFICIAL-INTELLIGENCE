@@ -1,0 +1,22 @@
+% Define vowelsMore actions
+is_vowel(a).
+is_vowel(e).
+is_vowel(i).
+is_vowel(o).
+is_vowel(u).
+
+% Base case: empty list
+count_vowels([], 0).
+
+% If head is a vowel, increment count
+count_vowels([H|T], Count) :-
+    is_vowel(H),
+    count_vowels(T, Rest),
+    Count is Rest + 1.
+
+% If head is not a vowel, skip it
+count_vowels([H|T], Count) :-
+    \+ is_vowel(H),
+    count_vowels(T, Count).
+
+QUERY:count_vowels([h,e,l,l,o], N).
